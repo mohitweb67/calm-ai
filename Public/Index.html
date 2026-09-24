@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CALM AI</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b0f19;
+    color: white;
+}
+
+.app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* HEADER */
+
+header {
+    height: 65px;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    background: #111722;
+    border-bottom: 1px solid #272e3b;
+}
+
+.logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: linear-gradient(
+        135deg,
+        #7657ff,
+        #20d6a0
+    );
+
+    font-size: 20px;
+    font-weight: bold;
+
+    margin-right: 12px;
+}
+
+.title {
+    font-size: 21px;
+    font-weight: bold;
+}
+
+.status {
+    margin-left: auto;
+    color: #55e6ae;
+    font-size: 13px;
+}
+
+/* CHAT */
+
+#chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 25px 15px;
+}
+
+.message {
+    max-width: 850px;
+    margin: 0 auto 20px;
+
+    display: flex;
+    gap: 10px;
+}
+
+.avatar {
+    min-width: 36px;
+    height: 36px;
+
+    border-radius: 50%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #242b38;
+
+    font-weight: bold;
+}
+
+.user .avatar {
+    background: #7657ff;
+}
+
+.content {
+    max-width: 80%;
+
+    padding: 12px 15px;
+
+    border-radius: 15px;
+
+    line-height: 1.5;
+
+    white-space: pre-wrap;
+}
+
+.ai .content {
+    background: #171d29;
+}
+
+.user .content {
+    background: #5141c9;
+    margin-left: auto;
+}
+
+/* INPUT */
+
+.bottom {
+    padding: 12px;
+
+    background: #111722;
+
+    border-top: 1px solid #272e3b;
+}
+
+.input-box {
+    max-width: 850px;
+    margin: auto;
+
+    display: flex;
+
+    gap: 8px;
+}
+
+textarea {
+    flex: 1;
+
+    resize: none;
+
+    height: 52px;
+
+    border: 1px solid #343c4c;
+
+    border-radius: 15px;
+
+    padding: 15px;
+
+    background: #171d29;
+
+    color: white;
+
+    outline: none;
+
+    font-size: 15px;
+}
+
+textarea:focus {
+    border-color: #7657ff;
+}
+
+button {
+    border: none;
+
+    border-radius: 14px;
+
+    padding: 0 18px;
+
+    background: #7657ff;
+
+    color: white;
+
+    font-size: 18px;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background: #6447ef;
+}
+
+button:disabled {
+    opacity: 0.5;
+}
+
+/* MOBILE */
+
+@media(max-width:600px) {
+
+    .content {
+        max-width: 88%;
+    }
+
+    .status {
+        display: none;
+    }
+
+    textarea {
+        font-size: 14px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- HEADER -->
+
+    <header>
+
+        <div class="logo">
+            C
+        </div>
+
+        <div class="title">
+            CALM AI
+        </div>
+
+        <div class="status">
+            ● Online
+        </div>
+
+    </header>
+
+
+    <!-- CHAT -->
+
+    <div id="chat">
+
+        <div class="message ai">
+
+            <div class="avatar">
+                C
+            </div>
+
+            <div class="content">
+Hello! 👋
+
+I am CALM, your AI assistant.
+
+You can talk to me in English,
+Hindi, and many other languages.
+
+Ask me anything! 😊
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- INPUT -->
+
+    <div class="bottom">
+
+        <div class="input-box">
+
+            <textarea
+                id="input"
+                placeholder="Message CALM..."
+                onkeydown="handleKey(event)"
+            ></textarea>
+
+            <button
+                id="send"
+                onclick="sendMessage()"
+            >
+                ➤
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/*
+====================================================
+CALM AI
+====================================================
+
+This is the CALM AI front-end.
+
+The /api/chat address will connect CALM
+to the AI backend that we will add later.
+
+DO NOT put your private API key in this file.
+====================================================
+*/
+
+
+let conversation = [];
+
+
+/* ADD MESSAGE */
+
+function addMessage(text, type) {
+
+    const chat = document.getElementById("chat");
+
+    const message = document.createElement("div");
+
+    message.className =
+        "message " + type;
+
+
+    const avatar =
+        document.createElement("div");
+
+    avatar.className = "avatar";
+
+    avatar.textContent =
+        type === "user" ? "Y" : "C";
+
+
+    const content =
+        document.createElement("div");
+
+    content.className = "content";
+
+    content.textContent = text;
+
+
+    message.appendChild(avatar);
+
+    message.appendChild(content);
+
+    chat.appendChild(message);
+
+
+    chat.scrollTop =
+        chat.scrollHeight;
+}
+
+
+/* SEND MESSAGE */
+
+async function sendMessage() {
+
+    const input =
+        document.getElementById("input");
+
+    const send =
+        document.getElementById("send");
+
+
+    const text =
+        input.value.trim();
+
+
+    if (!text) {
+        return;
+    }
+
+
+    /* Show user message */
+
+    addMessage(
+        text,
+        "user"
+    );
+
+
+    /* Save conversation */
+
+    conversation.push({
+
+        role: "user",
+
+        content: text
+
+    });
+
+
+    /* Clear input */
+
+    input.value = "";
+
+
+    /* Disable button */
+
+    send.disabled = true;
+
+
+    /* Thinking message */
+
+    addMessage(
+        "CALM is thinking...",
+        "ai"
+    );
+
+
+    const aiMessages =
+        document.querySelectorAll(
+            ".ai .content"
+        );
+
+
+    const thinking =
+        aiMessages[
+            aiMessages.length - 1
+        ];
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/chat",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        messages:
+                            conversation
+
+                    })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Server error"
+            );
+
+        }
+
+
+        /* Display AI answer */
+
+        thinking.textContent =
+            data.reply;
+
+
+        /* Save AI answer */
+
+        conversation.push({
+
+            role: "assistant",
+
+            content: data.reply
+
+        });
+
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+
+        thinking.textContent =
+            "Sorry! CALM could not connect to the AI server yet.";
+
+    }
+
+
+    send.disabled = false;
+
+    input.focus();
+}
+
+
+/* ENTER TO SEND */
+
+function handleKey(event) {
+
+    if (
+        event.key === "Enter" &&
+        !event.shiftKey
+    ) {
+
+        event.preventDefault();
+
+        sendMessage();
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
