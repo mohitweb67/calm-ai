@@ -13,7 +13,7 @@ const client = new OpenAI({
 app.use(express.json());
 
 app.use(express.static(
-    path.join(__dirname, "L
+    path.join(__dirname, "
               Public")
 ));
 
@@ -75,7 +75,7 @@ app.get("*", (req, res) => {
     res.sendFile(
         path.join(
             __dirname,
-            "public",
+            "Public",
             "index.html"
         )
     );
