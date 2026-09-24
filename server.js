@@ -13,7 +13,8 @@ const client = new OpenAI({
 app.use(express.json());
 
 app.use(express.static(
-    path.join(__dirname, "public")
+    path.join(__dirname, "L
+              Public")
 ));
 
 app.post("/api/chat", async (req, res) => {
