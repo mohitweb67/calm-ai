@@ -1,92 +1,79 @@
 const express = require("express");
-const OpenAI = require("openai");
 const path = require("path");
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
-
-const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
 
 app.use(express.json());
 
-app.use(express.static(
-    path.join(__dirname, "
-              Public")
-));
+app.use(express.static(path.join(__dirname, "Public")));
 
 app.post("/api/chat", async (req, res) => {
-
     try {
-
         const messages = req.body.messages || [];
 
-        const response = await client.responses.create({
+        const conversation = messages
+            .map(m => `${m.role}: ${m.content}`)
+            .join("\n");
 
-            model: "gpt-5-mini",
+        const response = await fetch(
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-goog-api-key": process.env.GEMINI_API_KEY
+                },
+                body: JSON.stringify({
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text: `You are CALM AI, a friendly and helpful multilingual AI assistant.
 
-            instructions: `
-You are CALM AI.
+Reply in the same language as the user whenever possible.
+Give clear, useful and easy-to-understand answers.
 
-You are a friendly and helpful AI assistant.
+Conversation:
+${conversation}`
+                                }
+                            ]
+                        }
+                    ]
+                })
+            }
+        );
 
-Understand the user's language and reply
-in the same language whenever possible.
+        const data = await response.json();
 
-You can help with:
-- General questions
-- School subjects
-- Mathematics
-- Science
-- Coding
-- Writing
-- Translation
-- Explanations
-- Conversation
+        if (!response.ok) {
+            console.error(data);
+            return res.status(500).json({
+                error: "Gemini API error"
+            });
+        }
 
-Give clear and useful answers.
-`,
+        const reply =
+            data.candidates?.[0]?.content?.parts?.[0]?.text ||
+            "Sorry, I could not generate a reply.";
 
-            input: messages
-
-        });
-
-        res.json({
-            reply: response.output_text
-        });
+        res.json({ reply });
 
     } catch (error) {
-
         console.error(error);
 
         res.status(500).json({
             error: "CALM AI could not respond."
         });
-
     }
-
 });
-
 
 app.get("*", (req, res) => {
-
     res.sendFile(
-        path.join(
-            __dirname,
-            "Public",
-            "index.html"
-        )
+        path.join(__dirname, "Public", "index.html")
     );
-
 });
 
-
 app.listen(PORT, () => {
-
-    console.log(
-        `CALM AI running on port ${PORT}`
-    );
-
+    console.log(`CALM AI running on port ${PORT}`);
 });
